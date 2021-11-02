@@ -6,11 +6,7 @@ bool stringComplete = false;  // whether the string is complete
 Delta myDelta = Delta();
 float height;
 int val=0;
-int val1=0;
-int val2=0;
 int analogPin = A0;
-int analogPin1 = A0;
-int analogPin2 = A1;
 
 // Uncomment below for general analog input
 //int analogVal;
@@ -39,6 +35,7 @@ void setup() {
   inputString.reserve(200);
   myDelta.setupMotors(9, 10, 11);
   myDelta.goHome();
+
 }
 
 void loop() {
@@ -88,12 +85,8 @@ void loop() {
     }
 
     if (inputString.equalsIgnoreCase("READ")) {
-      //val = analogRead(analogPin);
-      val1 = analogRead(analogPin1);
-      val2 = analogRead(analogPin2);
-      Serial.print(val1);
-      Serial.print(",");
-      Serial.println(val2);
+      val = analogRead(analogPin);
+      Serial.println(val);
     }
 
     if (inputString.startsWith("ANG")) { // parameterized messages
@@ -139,9 +132,9 @@ void SF2() {
   for (int i = 0; i < 1000; i++) {
     val = analogRead(analogPin);
     Serial.print(val);
-//    myDelta.goTo(0, map(val,65,1024,-30,30), -45);
+    myDelta.goTo(0, map(val,65,1024,-30,30), -45);
   }
-//  Serial.println("SF2");
+  Serial.println("SF2");
 }
 
 void SF3() {
