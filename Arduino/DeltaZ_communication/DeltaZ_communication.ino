@@ -6,8 +6,7 @@ bool stringComplete = false;  // whether the string is complete
 Delta myDelta = Delta();
 float height;
 int val=0;
-int val1=0;
-int val2=0;
+//int val1s[100], val2s[100];
 int analogPin = A0;
 int analogPin1 = A0;
 int analogPin2 = A1;
@@ -89,11 +88,17 @@ void loop() {
 
     if (inputString.equalsIgnoreCase("READ")) {
       //val = analogRead(analogPin);
-      val1 = analogRead(analogPin1);
-      val2 = analogRead(analogPin2);
-      Serial.print(val1);
-      Serial.print(",");
-      Serial.println(val2);
+      int val1, val2;
+      for(int i = 0; i < 100; i++){
+        val1 = analogRead(analogPin1);
+        val2 = analogRead(analogPin2);
+        Serial.print(val1);
+        Serial.print(",");
+        Serial.print(val2);
+        Serial.print(";");
+      }
+      Serial.println(";");
+
     }
 
     if (inputString.startsWith("ANG")) { // parameterized messages

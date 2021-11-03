@@ -6,7 +6,7 @@ from collections import deque
 import matplotlib
 import re
 # matplotlib.use('agg')
-ser = serial.Serial('/dev/cu.wchusbserial1410')
+ser = serial.Serial('/dev/cu.wchusbserial1420')
 time.sleep(2)
 print(ser.name)
 
@@ -24,13 +24,18 @@ def write_read(x):
 
 def read_microphones():
     data=write_read(b'read \n')
-    # print(data)
-    data = str(data)
-    data = [int(s) for s in re.findall(r'\b\d+\b', data)]
+    print(data)
+    data = str(data[2:])
+    data = data.split(";")
+    # data = [list(map(int, re.findall(r'\b\d+\b', s))) for s in data]
+    data = [list(map(int, s.split(','))) for s in data]
+    print(data)
+    data = np.array(data).transpose()
+    print(data)
     return data
 
 
-def collect_sound(steps=100):
+def collect_sound(steps=1):
     l1 = []
     l2 = []
     for i in range(steps):
@@ -112,27 +117,36 @@ def visualize_data(data_file):
 
     plt.show()
 
-data_file = "front_data.npz"
-visualize_data(data_file)
+# read_microphones()
+ret = collect_sound(steps=100)
+print(ret)
 exit()
 
-data = move_around()
-print(data)
+# data_file = "front_data.npz"
+# visualize_data(data_file)
+# exit()
 
-np.savez(data_file, data=data)
-print(data)
-exit()
+# data = move_around()
+# print(data)
+
+# np.savez(data_file, data=data)
+# print(data)
+# exit()
 
 
+# fig = plt.figure()
+# time_steps = range(1000)
+# mic1, mic2 = collect_sound(steps=len(time_steps))
+# plt.plot(time_steps, mic1)
+# plt.plot(time_steps, mic2)
+# plt.show()
+# exit()
 
 mic1 = deque()
 mic2 = deque()
 time_steps = deque()
 tot_len = 100
 
-fig = plt.figure()
-plt.ion()
-plt.show()
 
 
 read_time = 0
