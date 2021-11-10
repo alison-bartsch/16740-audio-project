@@ -6,7 +6,7 @@ from collections import deque
 import matplotlib
 import re
 # matplotlib.use('agg')
-ser = serial.Serial('/dev/cu.wchusbserial1420')
+ser = serial.Serial('/dev/cu.wchusbserial1410')
 time.sleep(2)
 print(ser.name)
 
@@ -19,30 +19,16 @@ maxval=1024
 def write_read(x):
     ser.write(bytes(x))
     time.sleep(0.001)
-    data = ser.readline()
+    data = ser.readline().decode("utf-8")
     return data
-
-def read_microphones():
-    data=write_read(b'read \n')
-    print(data)
-    data = str(data[2:])
-    data = data.split(";")
-    # data = [list(map(int, re.findall(r'\b\d+\b', s))) for s in data]
-    data = [list(map(int, s.split(','))) for s in data]
-    print(data)
-    data = np.array(data).transpose()
-    print(data)
-    return data
-
 
 def collect_sound(steps=1):
-    l1 = []
-    l2 = []
-    for i in range(steps):
-        data = read_microphones()
-        l1.append(data[0])
-        l2.append(data[1])
-    return l1, l2
+    data=write_read(b'read \n')
+    data = data.split(";")[:-1]
+    # data = [list(map(int, re.findall(r'\b\d+\b', s))) for s in data]
+    data = [list(map(int, s.split(','))) for s in data]
+    data = np.array(data).transpose()
+    return data[0], data[1]
 
 def collect_baselines(steps):
     move_to(0,0,-45)
@@ -72,7 +58,7 @@ def move_to(x,y,z):
     ret = write_read(s)
     time.sleep(1)
 
-def move_around():
+def collect_data():
     shifts = collect_baselines(1000)
 
     xs = np.arange(-30,31,5)
@@ -117,16 +103,15 @@ def visualize_data(data_file):
 
     plt.show()
 
-# read_microphones()
-ret = collect_sound(steps=100)
-print(ret)
-exit()
+# ret = collect_sound()
+# print(ret)
+# exit()
 
 # data_file = "front_data.npz"
 # visualize_data(data_file)
 # exit()
 
-# data = move_around()
+data = collect_data()
 # print(data)
 
 # np.savez(data_file, data=data)
@@ -157,9 +142,9 @@ for iter in range(1000):
     if (iter % 100 == 0):
         print(iter)
     t1 = time.time()
-    data = read_microphones()
-    mic1.append(data[0] - shift1)
-    mic2.append(data[1] - shift2)
+    l1, l2 = collect_sound()
+    mic1.append(l1 - shift1)
+    mic2.append(l2 - shift2)
 
     # time_steps.append(time.time())
     time_steps.append(iter)

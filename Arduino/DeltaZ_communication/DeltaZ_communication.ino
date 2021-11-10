@@ -97,7 +97,7 @@ void loop() {
         Serial.print(val2);
         Serial.print(";");
       }
-      Serial.println(";");
+      Serial.println("");
 
     }
 
