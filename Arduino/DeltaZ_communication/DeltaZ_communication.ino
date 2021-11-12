@@ -88,7 +88,7 @@ void loop() {
 
     if (inputString.startsWith("READ")) {
       String stepString = inputString.substring(5);
-      int step_num = stepString .toInt();
+      int step_num = stepString.toInt();
       
       //val = analogRead(analogPin);
       int val1, val2;
