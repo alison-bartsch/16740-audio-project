@@ -18,7 +18,7 @@ maxval=1024
 
 def write_read(x):
     ser.write(bytes(x))
-    time.sleep(0.001)
+    time.sleep(0.1)
     data = ser.readline().decode("utf-8")
     return data
 
@@ -58,11 +58,11 @@ def move_to(x,y,z):
     ret = write_read(s)
     time.sleep(1)
 
-def collect_data():
-    shifts = collect_baselines(100)
+def collect_data(sep):
+    shifts = collect_baselines(200)
     input("Hit enter to continue")
-    xs = np.arange(-30,31,5)
-    ys = np.arange(-30,31,5)
+    xs = np.arange(-30,31,sep)
+    ys = np.arange(-30,31,sep)
     z = -45
     data = []
 
@@ -77,18 +77,18 @@ def collect_data():
                 data.append(((x,y), pv))
     return data
 
-def visualize_data(data_file):
+def visualize_data(data_file, sep):
     npzfile = np.load(data_file)
     data = npzfile["data"]
 
-    x,y = np.meshgrid(np.arange(-30,31,5), np.arange(-30,31,5))
-    l = np.ones((13,13)) * -10
-    r = np.ones((13,13)) * -10
+    x,y = np.meshgrid(np.arange(-30,31,sep), np.arange(-30,31,sep))
+    l = np.ones((60//sep+1,60//sep+1)) * -10
+    r = np.ones((60//sep+1,60//sep+1)) * -10
     for i in range(len(data)):
         xx = int(data[i][0][0])
         yy = int(data[i][0][1])
-        l[xx//5 + 6][yy//5 + 6] = data[i][1][0]
-        r[xx//5 + 6][yy//5 + 6] = data[i][1][1]
+        l[xx//sep + sep+1][yy//sep + sep+1] = data[i][1][0]
+        r[xx//sep + sep+1][yy//sep + sep+1] = data[i][1][1]
 
     fig, axs = plt.subplots(1,2)
     c = axs[0].pcolormesh(x, y, l, cmap='RdBu', vmin=-10, vmax=40)
@@ -111,9 +111,10 @@ def test():
     plot_data(range(100), l, r)
 
 def collect_and_save_data(save_path):
-    data = collect_data()
+    sep=10
+    data = collect_data(sep=sep)
     np.savez(save_path, data=data)
-    visualize_data(save_path)
+    visualize_data(save_path,sep)
 
 def load_data(save_path):
     np.savez(save_path, data=data)
