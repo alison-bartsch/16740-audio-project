@@ -24,9 +24,7 @@ def write_read(x):
 
 def collect_sound(steps=1):
     cmd = str.encode('read {} \n'.format(steps))
-    print("cmd:",cmd)
     data = write_read(cmd)
-    print("data:",data)
     data = data.split(";")[:-1]
     data = [list(map(int, s.split(','))) for s in data]
     data = np.array(data).transpose()
@@ -35,8 +33,6 @@ def collect_sound(steps=1):
 def collect_baselines(steps):
     move_to(0,0,-45)
     l1, l2 = collect_sound(steps=steps)
-    print(l1)
-    print(l2)
     return np.array([np.mean(l1), np.mean(l2)])
 
 def peak_value(steps, percent):
@@ -63,10 +59,8 @@ def move_to(x,y,z):
     time.sleep(1)
 
 def collect_data():
-    print("collecting baseline")
     shifts = collect_baselines(100)
-    print("collected baseline")
-
+    input("Hit enter to continue")
     xs = np.arange(-30,31,5)
     ys = np.arange(-30,31,5)
     z = -45
