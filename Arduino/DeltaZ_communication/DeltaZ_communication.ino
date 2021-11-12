@@ -86,10 +86,13 @@ void loop() {
       myDelta.goTo(x, y, z);
     }
 
-    if (inputString.equalsIgnoreCase("READ")) {
+    if (inputString.startsWith("READ")) {
+      String stepString = inputString.substring(5);
+      int step_num = stepString .toInt();
+      
       //val = analogRead(analogPin);
       int val1, val2;
-      for(int i = 0; i < 100; i++){
+      for(int i = 0; i < step_num; i++){
         val1 = analogRead(analogPin1);
         val2 = analogRead(analogPin2);
         Serial.print(val1);

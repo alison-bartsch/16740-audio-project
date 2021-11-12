@@ -23,9 +23,9 @@ def write_read(x):
     return data
 
 def collect_sound(steps=1):
-    data=write_read(b'read \n')
+    cmd = str.encode('read {} \n'.format(steps))
+    data = write_read(cmd)
     data = data.split(";")[:-1]
-    # data = [list(map(int, re.findall(r'\b\d+\b', s))) for s in data]
     data = [list(map(int, s.split(','))) for s in data]
     data = np.array(data).transpose()
     return data[0], data[1]
@@ -45,12 +45,14 @@ def peak_value(steps, percent):
     return np.array([l1[idx], l2[idx]])
 
 def plot_data(time_steps, mic1, mic2):
-    plt.clf()
+    # plt.clf()
+    plt.figure()
     plt.plot(time_steps, mic1)
     plt.plot(time_steps, mic2)
-    plt.ylim(-100, 100)
-    plt.draw()
-    plt.pause(0.0001)
+    # plt.ylim(-100, 100)
+    plt.show()
+    # plt.draw()
+    # plt.pause(0.0001)
 
 def move_to(x,y,z):
     s = str.encode('goto {},{},{} \n'.format(x,y,z))
@@ -103,75 +105,23 @@ def visualize_data(data_file):
 
     plt.show()
 
-# ret = collect_sound()
-# print(ret)
-# exit()
+def test():
+    shifts = collect_baselines(1000)
+    l, r = collect_sound(step=100)
+    l = l - shifts[0]
+    r = r - shifts[1]
+    plot_data(range(100), l, r)
 
-# data_file = "front_data.npz"
-# visualize_data(data_file)
-# exit()
+def collect_and_save_data(save_path):
+    data = collect_data()
+    np.savez(save_path, data=data)
+    visualize_data(save_path)
 
-data = collect_data()
-# print(data)
-
-# np.savez(data_file, data=data)
-# print(data)
-# exit()
-
-
-# fig = plt.figure()
-# time_steps = range(1000)
-# mic1, mic2 = collect_sound(steps=len(time_steps))
-# plt.plot(time_steps, mic1)
-# plt.plot(time_steps, mic2)
-# plt.show()
-# exit()
-
-mic1 = deque()
-mic2 = deque()
-time_steps = deque()
-tot_len = 100
+def load_data(save_path):
+    np.savez(save_path, data=data)
+    visualize_data(save_path)
 
 
 
-read_time = 0
-plot_time = 0
-
-
-for iter in range(1000):
-    if (iter % 100 == 0):
-        print(iter)
-    t1 = time.time()
-    l1, l2 = collect_sound()
-    mic1.append(l1 - shift1)
-    mic2.append(l2 - shift2)
-
-    # time_steps.append(time.time())
-    time_steps.append(iter)
-
-    # if len(mic1) > tot_len:
-    #   mic1.popleft()
-    #   mic2.popleft()
-    #   time_steps.popleft()
-
-    # desY=60.0*((float(int(data)-minval)/float(maxval-minval))-0.5)
-    # print(data,desY)
-
-    t2 = time.time()
-    # if len(time_steps) == tot_len:
-    #   plot_data(time_steps, mic1, mic2)
-    t3 = time.time()
-
-    read_time += t2 - t1
-    plot_time += t3 - t2
-    # time.sleep(0.001)
-
-
-plot_data(time_steps, mic1, mic2)
-time.sleep(5)
-print(read_time)
-print(plot_time)
-    # data_num = data.index()
-    # data=write_read(b'goto 0, '+str(desY).encode('ASCII')+b',-45 \n')
-
+collect_and_save_data("front_data.npz")
 ser.close()
