@@ -6,7 +6,7 @@ from collections import deque
 import matplotlib
 import re
 # matplotlib.use('agg')
-ser = serial.Serial('/dev/cu.wchusbserial1410')
+ser = serial.Serial('/dev/cu.usbserial-120')
 time.sleep(2)
 print(ser.name)
 
@@ -35,12 +35,15 @@ def collect_baselines(steps):
     l1, l2 = collect_sound(steps=steps)
     return np.array([np.mean(l1), np.mean(l2)])
 
-def peak_value(steps, percent):
+def peak_value(steps, percent, shifts):
     l1, l2 = collect_sound(steps)
+    l1 = np.abs(l1 - shifts[0])
+    l2 = np.abs(l2 - shifts[1])
     l1 = sorted(l1)
     l2 = sorted(l2)
     idx = int(percent * len(l1))
-    return np.array([l1[idx], l2[idx]])
+    # return np.array([l1[idx], l2[idx]])
+    return np.array([np.mean(l1), np.mean(l2)])
 
 def plot_data(time_steps, mic1, mic2):
     # plt.clf()
@@ -67,12 +70,16 @@ def collect_data(sep):
     data = []
 
     for i,x in enumerate(xs):
+        first_time=True
         for j,y in enumerate(ys):
-            if j == 0:
-                    time.sleep(1)
             if x**2 + y**2 <= 900:
                 move_to(x,y,z)
-                pv = peak_value(100, 0.9) - shifts
+                time.sleep(1)
+                if first_time:
+                    time.sleep(2)
+                    first_time=False
+                pv = peak_value(100, 0.7, shifts)
+                time.sleep(1.5)
                 print(pv)
                 data.append(((x,y), pv))
     return data
@@ -81,15 +88,22 @@ def visualize_data(data_file, sep):
     npzfile = np.load(data_file)
     data = npzfile["data"]
 
-    x,y = np.meshgrid(np.arange(-30,31,sep), np.arange(-30,31,sep))
+    x,y = np.meshgrid(np.arange(-30-sep//2,31+sep//2,sep), np.arange(-30-sep//2,31+sep//2,sep))
     l = np.ones((60//sep+1,60//sep+1)) * -10
     r = np.ones((60//sep+1,60//sep+1)) * -10
+    shift = 30//sep
     for i in range(len(data)):
         xx = int(data[i][0][0])
         yy = int(data[i][0][1])
-        l[xx//sep + sep+1][yy//sep + sep+1] = data[i][1][0]
-        r[xx//sep + sep+1][yy//sep + sep+1] = data[i][1][1]
+        l[xx//sep + shift][yy//sep + shift] = data[i][1][0]
+        r[xx//sep + shift][yy//sep + shift] = data[i][1][1]
 
+    # print("x")
+    # print(x)
+    # print("y")
+    # print(y)
+    # print("l")
+    # print(l)
     fig, axs = plt.subplots(1,2)
     c = axs[0].pcolormesh(x, y, l, cmap='RdBu', vmin=-10, vmax=40)
     axs[0].set_title('Left')
