@@ -6,7 +6,8 @@ from collections import deque
 import matplotlib
 import re
 # matplotlib.use('agg')
-ser = serial.Serial('/dev/cu.usbserial-120')
+# ser = serial.Serial('/dev/cu.usbserial-120')
+ser = serial.Serial('/dev/cu.wchusbserial1410')
 time.sleep(2)
 print(ser.name)
 
@@ -41,9 +42,9 @@ def peak_value(steps, percent, shifts):
     l2 = np.abs(l2 - shifts[1])
     l1 = sorted(l1)
     l2 = sorted(l2)
-    idx = int(percent * len(l1))
-    # return np.array([l1[idx], l2[idx]])
-    return np.array([np.mean(l1), np.mean(l2)])
+    idx = int(percent * (len(l1)-1))
+    return np.array([l1[idx], l2[idx]])
+    # return np.array([np.mean(l1), np.mean(l2)])
 
 def plot_data(time_steps, mic1, mic2):
     # plt.clf()
@@ -76,10 +77,10 @@ def collect_data(sep):
                 move_to(x,y,z)
                 time.sleep(1)
                 if first_time:
-                    time.sleep(2)
+                    # time.sleep(2)
                     first_time=False
-                pv = peak_value(100, 0.7, shifts)
-                time.sleep(1.5)
+                pv = peak_value(100, 1.0, shifts)
+                # time.sleep(1.5)
                 print(pv)
                 data.append(((x,y), pv))
     return data
@@ -105,12 +106,12 @@ def visualize_data(data_file, sep):
     # print("l")
     # print(l)
     fig, axs = plt.subplots(1,2)
-    c = axs[0].pcolormesh(x, y, l, cmap='RdBu', vmin=-10, vmax=40)
+    c = axs[0].pcolormesh(x, y, l, cmap='RdBu', vmin=40, vmax=250)
     axs[0].set_title('Left')
     axs[0].axis([x.min(), x.max(), y.min(), y.max()])
     fig.colorbar(c, ax=axs[0])
 
-    c = axs[1].pcolormesh(x, y, r, cmap='RdBu', vmin=-10, vmax=40)
+    c = axs[1].pcolormesh(x, y, r, cmap='RdBu', vmin=40, vmax=240)
     axs[1].set_title('Right')
     axs[1].axis([x.min(), x.max(), y.min(), y.max()])
     fig.colorbar(c, ax=axs[1])
@@ -125,13 +126,12 @@ def test():
     plot_data(range(100), l, r)
 
 def collect_and_save_data(save_path):
-    sep=10
+    sep=5
     data = collect_data(sep=sep)
     np.savez(save_path, data=data)
     visualize_data(save_path,sep)
 
 def load_data(save_path):
-    np.savez(save_path, data=data)
     visualize_data(save_path)
 
 
