@@ -7,7 +7,7 @@ import matplotlib
 import re
 # matplotlib.use('agg')
 # ser = serial.Serial('/dev/cu.usbserial-120')
-ser = serial.Serial('/dev/cu.wchusbserial1410')
+ser = serial.Serial('/dev/cu.usbserial-130')
 time.sleep(2)
 print(ser.name)
 
@@ -64,7 +64,7 @@ def move_to(x,y,z):
 
 def collect_data(sep):
     shifts = collect_baselines(200)
-    input("Hit enter to continue")
+    input("\nTURN ON METRONOME! HIT ENTER TO CONTINUE.\n")
     xs = np.arange(-30,31,sep)
     ys = np.arange(-30,31,sep)
     z = -45
@@ -109,12 +109,21 @@ def visualize_data(data_file, sep):
     c = axs[0].pcolormesh(x, y, l, cmap='RdBu', vmin=40, vmax=250)
     axs[0].set_title('Left')
     axs[0].axis([x.min(), x.max(), y.min(), y.max()])
+    axs[0].set_aspect('equal')
     fig.colorbar(c, ax=axs[0])
 
-    c = axs[1].pcolormesh(x, y, r, cmap='RdBu', vmin=40, vmax=240)
+    c = axs[1].pcolormesh(x, y, r, cmap='RdBu', vmin=40, vmax=250)
     axs[1].set_title('Right')
     axs[1].axis([x.min(), x.max(), y.min(), y.max()])
+    axs[1].set_aspect('equal')
     fig.colorbar(c, ax=axs[1])
+    fig.set_size_inches(12, 5)
+
+    
+    # save the plot
+    plot_name = data_file.split('.')[0].split('/')
+    plot_path = "figures/" + plot_name[1] + ".png"
+    plt.savefig(plot_path)
 
     plt.show()
 
@@ -135,6 +144,10 @@ def load_data(save_path):
     visualize_data(save_path)
 
 
+# Data Collection Loop - front 
+for i in range(10):
+    data_path = "data/front_data_" + str(i) + ".npz"
+    collect_and_save_data(data_path)
+    input("\nTURN OFF METRONOME! HIT ENTER TO CONTINUE.\n")
 
-collect_and_save_data("front_data.npz")
 ser.close()
