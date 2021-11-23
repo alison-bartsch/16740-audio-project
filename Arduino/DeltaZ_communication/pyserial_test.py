@@ -146,7 +146,7 @@ def load_data(save_path):
 
 # Data Collection Loop - front 
 for i in range(10):
-    data_path = "data/front_data_" + str(i) + ".npz"
+    data_path = "data/front2_data_" + str(i) + ".npz"
     collect_and_save_data(data_path)
     input("\nTURN OFF METRONOME! HIT ENTER TO CONTINUE.\n")
 
