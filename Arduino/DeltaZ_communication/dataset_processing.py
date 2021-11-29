@@ -36,18 +36,28 @@ for location in sources:
         npzfile = np.load(file_path)
         raw_data = npzfile["data"]
 
-        data = np.zeros((len(raw_data),7))
+        data = np.zeros((len(raw_data),8))
 
         for j in range(len(raw_data)):
-            data[j, 0] = raw_data[j][0,0]   # [p_t_x]
-            data[j, 1] = raw_data[j][0,1]   # [p_t_y]
-            data[j, 2] = raw_data[j][1,0]   # [h_left]
-            data[j, 3] = raw_data[j][1,1]   # [h_right]
-            data[j, 4] = s[0]               # [s_x]
-            data[j, 5] = s[1]               # [s_y]
-            data[j, 6] =                    # [d_t]
 
+            # defining data in terms of defined variables
+            p_t = (raw_data[j][0,0], raw_data[j][0,1])
+            h = (raw_data[j][1,0], raw_data[j][1,1])
+            d_t = (s[0] - raw_data[j][0,0], s[1] - raw_data[j][0,1])
 
+            data[j, 0] = p_t[0]     # [p_t_x]
+            data[j, 1] = p_t[1]     # [p_t_y]
+            data[j, 2] = h[0]       # [h_left]
+            data[j, 3] = h[1]       # [h_right]
+            data[j, 4] = s[0]       # [s_x]
+            data[j, 5] = s[1]       # [s_y]
+            data[j, 6] = d_t[0]     # [d_t_x]
+            data[j, 7] = d_t[1]     # [d_t_y]
+
+        # normalize d_t
+        print(data[:,6])
+
+        print(data)
 
         assert False
 
