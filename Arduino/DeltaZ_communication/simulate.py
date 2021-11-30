@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.patches as patches
-
+from datasets import AudioDataset
 
 import time
 import numpy as np
@@ -94,19 +94,22 @@ def find_nearest_pos(pos):
     pos[1] = max(pos[1], -30)
     return pos
     
-def rollout(model, l, r):
+def rollout(model, l, r, scale, shift):
     pos = np.array([0,0])
     goal = np.array([0,0])
     pos_list = [pos]
-    for i in range(5):
-        pred = model(torch.tensor(np.array([pos[0], pos[1], l[tuple(pos)], r[tuple(pos)]]).astype("float32")))
-        loc = pred.argmax()
+    cum_pred = torch.tensor(np.zeros(4))
+    for i in range(7):
+        input = (np.array([pos[0], pos[1], l[tuple(pos)], r[tuple(pos)]]) - shift) / scale
+        pred = model(torch.tensor(input.astype("float32")))
+        cum_pred = cum_pred * 0.8 + pred
+        loc = cum_pred.argmax()
         goal = sound_loc[sources[loc]]
         if np.linalg.norm(goal-pos)  < 1e-6:
             break
         direction = (goal-pos) / np.linalg.norm(goal-pos)
         print(pos)
-        pos = pos + direction * 5
+        pos = pos + direction * 10
         print(pos)
         pos = find_nearest_pos(pos)
         print(pos)
@@ -120,6 +123,8 @@ def simulate():
     model = FC(2, 4, 1000, 4)
     model.load_state_dict(torch.load("./models/FC3-1000.pth"))
 
+    dataset = AudioDataset("./data")
+
     for location in sources:
         s = sound_loc[location]
         fig, axs = plt.subplots(2,10)
@@ -130,7 +135,7 @@ def simulate():
             x, y, l, r = load_data(file_path, sep)
             l_map, r_map = load_data_map(file_path)
             plot_data(x, y, l, r, axs[0,i], axs[1,i])
-            traj = rollout(model, l_map, r_map)
+            traj = rollout(model, l_map, r_map, dataset.scale, dataset.shift)
             plot_traj(traj, axs[0,i])
 
         # label_source(axs[0])
