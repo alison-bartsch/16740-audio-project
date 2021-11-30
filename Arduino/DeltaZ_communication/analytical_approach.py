@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+from pyserial_test import write_read, collect_sound, collect_baselines, move_to, peak_value
 
 ser = serial.Serial('/dev/cu.usbserial-130')
 time.sleep(2)
@@ -11,49 +12,6 @@ ser.readline()
 
 minval=65
 maxval=1024
-
-
-# ----------------------------------------------------------
-# ------------------ Necessary Functions -------------------
-# ----------------------------------------------------------
-
-def write_read(x):
-    ser.write(bytes(x))
-    time.sleep(0.1)
-    data = ser.readline().decode("utf-8")
-    return data
-
-
-def collect_sound(steps=1):
-    cmd = str.encode('read {} \n'.format(steps))
-    data = write_read(cmd)
-    data = data.split(";")[:-1]
-    data = [list(map(int, s.split(','))) for s in data]
-    data = np.array(data).transpose()
-    return data[0], data[1]
-
-
-def collect_baselines(steps):
-    move_to(0,0,-45)
-    l1, l2 = collect_sound(steps=steps)
-    return np.array([np.mean(l1), np.mean(l2)])
-
-
-def move_to(x,y,z):
-    s = str.encode('goto {},{},{} \n'.format(x,y,z))
-    print("move to command:", s)
-    ret = write_read(s)
-    time.sleep(1)
-
-
-def peak_value(steps, percent, shifts):
-    l1, l2 = collect_sound(steps)
-    l1 = np.abs(l1 - shifts[0])
-    l2 = np.abs(l2 - shifts[1])
-    l1 = sorted(l1)
-    l2 = sorted(l2)
-    idx = int(percent * (len(l1)-1))
-    return np.array([l1[idx], l2[idx]])
 
 
 def explore(points):
