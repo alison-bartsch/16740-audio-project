@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
 import datasets
-
+import pandas as pd
 import matplotlib.patches as patches
 from model import FC
 torch.set_printoptions(precision=10)
@@ -67,22 +67,26 @@ def train_and_test(task):
     train_dataloader = DataLoader(task.training_data, batch_size=task.batch_size)
     test_dataloader = DataLoader(task.testing_data, batch_size=task.batch_size)
 
-    accs = []
-    losses = []
-    verified_steps = []
+    train_accs = []
+    train_losses = []
+
+    test_accs = []
+    test_losses = []
     
     for t in range(task.epochs):
         print(f"Epoch {t+1}\n-------------------------------")
         
         acc, loss = train(train_dataloader, task.model, task.loss_fn, task.optimizer, task.device, task.acc_cnt_fn)
-        accs.append(acc)
-        losses.append(loss)
+        train_accs.append(acc)
+        train_losses.append(loss)
+
+        acc, loss = test(test_dataloader, task.model, task.loss_fn, task.device, task.acc_cnt_fn)
+        test_accs.append(acc)
+        test_losses.append(loss)
 
     print("Done!")
 
-    acc, loss = test(test_dataloader, task.model, task.loss_fn, task.device, task.acc_cnt_fn)
-
-    return accs, losses, verified_steps
+    return train_accs, train_losses, test_accs, test_losses
 
 class Task():
     def __init__(self):
@@ -133,7 +137,38 @@ class OneStepEstimate(Task):
     def get_data(self):
         normalize=True
         data_path = './data/'
-        data = datasets.AudioDataset(data_path)
+        training_data = datasets.OneStepDataset(data_path, test=False)
+        testing_data = datasets.OneStepDataset(data_path, test=True)
+        return training_data, testing_data
+
+    def save_model(self, save_name):
+        torch.save(self.model.state_dict(), self.save_prefix+"/"+save_name+".pth")
+
+class TwoStepEstimate(Task):
+    # input: 4d, x2-x1, y2-y1, l2-l1, r2-r1, l1-r1, l2-r2
+    # output: 4d, probability of the source at different locations.
+
+    def set_learning_params(self):
+        self.save_prefix="./models/"
+        self.device = "cpu" # "cuda" if torch.cuda.is_available() else "cpu"
+        self.epochs = 1000
+        self.batch_size = 100000
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
+        self.loss_fn = nn.CrossEntropyLoss()
+        
+    def is_finished(self, results, acc):
+        return acc > 0.9
+    
+    def acc_cnt_fn(self, pred, y):
+        return (pred.argmax(1) == y).type(torch.float).sum().item()
+
+    def get_model(self):
+        return FC(2, 4, 1000, 4)
+
+    def get_data(self):
+        normalize=True
+        data_path = './data/'
+        data = datasets.TwoStepDataset(data_path)
         return data, data
 
     def save_model(self, save_name):
@@ -141,5 +176,5 @@ class OneStepEstimate(Task):
 
 if __name__ == "__main__":
     task = OneStepEstimate()
-    accs, losses, verified_steps = train_and_test(task)
-    task.save_model("FC3-1000")
+    train_accs, train_losses, test_accs, test_losses = train_and_test(task)
+    task.save_model("FC3-1000-8:2")

@@ -7,8 +7,9 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import matplotlib.patches as patches
-from datasets import AudioDataset
+import datasets
 
 import time
 import numpy as np
@@ -73,7 +74,6 @@ def plot_traj(traj, ax):
     for i in range(n-1):
         ax.plot(traj[:,0], traj[:,1])
 
-
 def visualize_all():
     # iterate through sources to get the data files: sources[i] + "_data_" + str(i) + ".npz"
     for location in sources:
@@ -98,7 +98,7 @@ def rollout(model, l, r, scale, shift):
     goal = np.array([0,0])
     pos_list = [pos]
     cum_pred = torch.tensor(np.zeros(4))
-    for i in range(10):
+    for i in range(7):
         input = (np.array([pos[0], pos[1], l[tuple(pos)], r[tuple(pos)]]) - shift) / scale
         pred = model(torch.tensor(input.astype("float32")))
         cum_pred = cum_pred * 0.8 + pred
@@ -122,14 +122,14 @@ def simulate():
     model = FC(2, 4, 1000, 4)
     model.load_state_dict(torch.load("./models/FC3-1000.pth"))
 
-    dataset = AudioDataset("./data")
+    dataset = datasets.OneStepDataset("./data", test=True)
 
     for location in sources:
         s = sound_loc[location]
         fig, axs = plt.subplots(2,10)
         fig.set_size_inches(20, 5)
         # iterate through the .npz files
-        for i in range(10):
+        for i in range(8,10):
             file_path = "data/" + location + "_data_" + str(i) + ".npz"
             x, y, l, r = load_data(file_path, sep)
             l_map, r_map = load_data_map(file_path)
