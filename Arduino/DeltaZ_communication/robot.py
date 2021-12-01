@@ -57,8 +57,8 @@ class Robot():
         # plt.draw()
         # plt.pause(0.0001)
 
-    def move_to(self, x,y):
-        s = str.encode('goto {},{},{} \n'.format(x,y,-45))
+    def move_to(self, x,y,z=-45):
+        s = str.encode('goto {},{},{} \n'.format(x,y,z))
         print("move to command:", s)
         ret = self.write_read(s)
         time.sleep(1)
@@ -157,6 +157,6 @@ class Robot():
         self.ser.close()
 
 
-r = Robot()
-# r.collect_data_loop("1k_back")
-r.collect_and_save_data("data/test.npz")
+# r = Robot()
+# # r.collect_data_loop("1k_back")
+# r.collect_and_save_data("data/test.npz")

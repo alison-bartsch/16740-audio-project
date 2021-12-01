@@ -93,8 +93,8 @@ def find_nearest_pos(pos):
     pos[1] = max(pos[1], -30)
     return pos
     
-def rollout(model, l, r, scale, shift):
-    pos = np.array([0,0])
+def rollout(model, start_pos, l, r, scale, shift):
+    pos = np.array(start_pos)
     goal = np.array([0,0])
     pos_list = [pos]
     cum_pred = torch.tensor(np.zeros(4))
@@ -120,7 +120,7 @@ def rollout(model, l, r, scale, shift):
 def simulate():
     # iterate through sources to get the data files: sources[i] + "_data_" + str(i) + ".npz"
     model = FC(2, 4, 1000, 4)
-    model.load_state_dict(torch.load("./models/FC3-1000.pth"))
+    model.load_state_dict(torch.load("./models/FC3-1000-8:2.pth"))
 
     dataset = datasets.OneStepDataset("./data", test=True)
 
@@ -140,7 +140,34 @@ def simulate():
         # label_source(axs[0])
         # label_source(axs[1])
         plt.show()
-        
+
+def evaluate():
+    # iterate through sources to get the data files: sources[i] + "_data_" + str(i) + ".npz"
+    model = FC(2, 4, 1000, 4)
+    model.load_state_dict(torch.load("./models/FC3-1000-8:2.pth"))
+
+    dataset = AudioDataset("./data")
+
+    for location in sources:
+        s = sound_loc[location]
+        fig, axs = plt.subplots(4,25)
+        fig.set_size_inches(20, 5)
+        # iterate through the .npz files
+        for i in range(8,10):
+            cnt = 0
+            x, y, l, r = load_data(file_path, sep)
+            l_map, r_map = load_data_map(file_path)
+            for sx in range(-10,11,5):
+                for sy in range(-10,11,5):
+                    cnt += 1
+                    file_path = "data/" + location + "_data_" + str(i) + ".npz"
+                    plot_data(x, y, l, r, axs[i-8,cnt], axs[i-8+1,cnt])
+                    traj = rollout(model, [sx,sy], l_map, r_map, dataset.scale, dataset.shift)
+                    plot_traj(traj, axs[i-8,cnt])
+        plt.show()
+        # label_source(axs[0])
+        # label_source(axs[1])
+
 def load_data_map(data_file):
     npzfile = np.load(data_file)
     data = npzfile["data"]
@@ -156,4 +183,5 @@ def load_data_map(data_file):
     return l_map, r_map
 
 
-simulate()
+# simulate()
+evaluate()
