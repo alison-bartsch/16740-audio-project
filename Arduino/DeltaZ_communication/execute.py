@@ -22,10 +22,14 @@ from robot import Robot
 
 
 sources = ["front", "back", "left", "right"]
-sound_loc = {"front": (30, 0),
-            "back": (-30, 0),
-            "left": (0, 30),
-            "right": (0, -30)}
+# sound_loc = {"front": (30, 0),
+#             "back": (-30, 0),
+#             "left": (0, 30),
+#             "right": (0, -30)}
+sound_loc = {"left": (30, 0),
+            "right": (-30, 0),
+            "front": (0, 30),
+            "back": (0, -30)}
 sep=5
 
 def find_nearest_pos(pos):
@@ -52,10 +56,16 @@ def execute():
     cum_pred = torch.tensor(np.zeros(4))
     while True:
         lr = robot.peak_value(100, 1.0, quiet)
+        print("lr")
         print(lr)
+        print("pos")
+        print(pos)
         X = (np.array([pos[0], pos[1], lr[0], lr[1]]) - dataset.shift) / dataset.scale
         pred = model(torch.tensor(X.astype("float32")))
-        
+        print("current pred")
+        print(sources[pred.argmax()])
+        print("cumulative pred")
+        print(sources[cum_pred.argmax()])
         cum_pred = cum_pred * 0.5 + pred
         loc = cum_pred.argmax()
         goal = sound_loc[sources[loc]]

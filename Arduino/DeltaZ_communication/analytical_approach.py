@@ -36,7 +36,7 @@ def explore(points):
 
 
 # state the sound source location
-s = (0, 30)
+# s = (0, 30)
 
 
 # want to move to 3 different locations - have a random option and a fixed triangle option
@@ -98,12 +98,12 @@ x_loc = []
 # estimate sound source location
 s_prime = (0,0)
 
-for i in range(data.shape[0]):
-    L = data[i][1,0]
-    R = data[i][1,1]
+for i in range(len(data)):
+    L = data[i][1][0]
+    R = data[i][1][1]
     LR_difference.append(L-R)
     LR_avg.append(np.mean([L, R]))
-    x_loc.append(data[i][0,0])
+    x_loc.append(data[i][0][0])
 
 diff_avg = np.mean(LR_difference)
 print("LR Difference: ", diff_avg, "\n")
@@ -116,18 +116,22 @@ print("X Direction: ", x_dir, "\n")
 # look at if sound source is from left or right
 if diff_avg > 25:
     s_prime = (0, 30)
+    print("Left")
 elif diff_avg < -25:
     s_prime = (0, -30)
+    print("Right")
 
 # look at if sound source is front or back
 elif x_dir > 0:
     s_prime = (30, 0)
+    print("Front")
 else:
     s_prime = (-30, 0)
+    print("Back")
 
 
 print("\nGuess Sound Location: ", s_prime)
-print("Actual Sound Location: ", s)
+# print("Actual Sound Location: ", s)
 
 
 # move to the guess location

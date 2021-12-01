@@ -62,19 +62,20 @@ def visualize_all():
         print(s)
         fig, axs = plt.subplots(2,10)
         fig.set_size_inches(20, 5)
+        fig.suptitle(location, fontsize=16)
         # iterate through the .npz files
         for i in range(10):
             file_path = "data/" + location + "_data_" + str(i) + ".npz"
             x, y, l, r = load_data(file_path, sep)
             plot_data(x, y, l, r, axs[0,i], axs[1,i])
-        plt.show()
+        # plt.show()
         # break
+        plt.savefig("./figures/"+location+"_all.png")
 
 def visualize_average():
     # iterate through sources to get the data files: sources[i] + "_data_" + str(i) + ".npz"
     for location in sources:
         s = sound_loc[location]
-        print(s)
         fig, axs = plt.subplots(1,2)
         fig.set_size_inches(10, 5)
         fig.suptitle(location, fontsize=16)
@@ -87,18 +88,17 @@ def visualize_average():
             x, y, l, r = load_data(file_path, sep)
             l_avg.append(l)
             r_avg.append(r)
-        print(np.shape(l_avg))
-        print(np.shape(np.mean(l_avg, axis=0)))
-        l_avg = np.mean(l_avg, axis=0)
-        r_avg = np.mean(r_avg, axis=0)
-        # l_avg = np.max(l_avg, axis=0)
-        # r_avg = np.max(r_avg, axis=0)
+        # l_avg = np.mean(l_avg, axis=0)
+        # r_avg = np.mean(r_avg, axis=0)
+        l_avg = np.max(l_avg, axis=0)
+        r_avg = np.max(r_avg, axis=0)
 
         c = plot_data(x, y, l_avg, r_avg, axs[0], axs[1])
         # fig.colorbar(c, ax=axs[1])
         label_source(axs[0])
         label_source(axs[1])
-        plt.show()
+        # plt.show()
+        plt.savefig("./figures/"+location+"_average.png")
 
-# visualize_average()
+visualize_average()
 visualize_all()
