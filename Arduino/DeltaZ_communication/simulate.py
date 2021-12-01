@@ -92,13 +92,19 @@ def find_nearest_pos(pos):
     pos[1] = min(pos[1], 30)
     pos[1] = max(pos[1], -30)
     return pos
+
+def scale_trajectory(cum_pred):
+    traj_list = np.linspace(10,30,5)
+    for i in range(len(traj_list)):
+        if cum_pred < (0.4 + 0.15*i):
+            return traj_list[i]
     
 def rollout(model, start_pos, l, r, scale, shift):
     pos = np.array(start_pos)
     goal = np.array([0,0])
     pos_list = [pos]
     cum_pred = torch.tensor(np.zeros(4))
-    for i in range(10):
+    for i in range(7):
         input = (np.array([pos[0], pos[1], l[tuple(pos)], r[tuple(pos)]]) - shift) / scale
         pred = model(torch.tensor(input.astype("float32")))
         cum_pred = cum_pred * 0.8 + pred
@@ -109,6 +115,10 @@ def rollout(model, start_pos, l, r, scale, shift):
         direction = (goal-pos) / np.linalg.norm(goal-pos)
         print(pos)
         pos = pos + direction * 10
+
+        # # update position with scaled trajectory 
+        # pos = pos + direction * scale_trajectory(cum_pred)
+
         print(pos)
         pos = find_nearest_pos(pos)
         print(pos)
