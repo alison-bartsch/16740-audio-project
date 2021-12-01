@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
+
 import matplotlib.patches as patches
 import datasets
 
