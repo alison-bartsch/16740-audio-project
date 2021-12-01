@@ -73,7 +73,7 @@ def train_and_test(task):
     
     for t in range(task.epochs):
         print(f"Epoch {t+1}\n-------------------------------")
-                
+        
         acc, loss = train(train_dataloader, task.model, task.loss_fn, task.optimizer, task.device, task.acc_cnt_fn)
         accs.append(acc)
         losses.append(loss)
@@ -109,7 +109,7 @@ class Task():
     def get_data(self):
         raise NotImplemented
 
-class CardinalMovingTask(Task):
+class OneStepEstimate(Task):
     # input: 4d, xy-position, volumes of two microphones
     # output: 4d, probability of the source at different locations.
 
@@ -140,6 +140,6 @@ class CardinalMovingTask(Task):
         torch.save(self.model.state_dict(), self.save_prefix+"/"+save_name+".pth")
 
 if __name__ == "__main__":
-    task = CardinalMovingTask()
+    task = OneStepEstimate()
     accs, losses, verified_steps = train_and_test(task)
     task.save_model("FC3-1000")
