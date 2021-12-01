@@ -100,5 +100,5 @@ def visualize_average():
         label_source(axs[1])
         plt.show()
 
-visualize_average()
-# visualize_all()
+# visualize_average()
+visualize_all()
