@@ -1,21 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-from pyserial_test import write_read, collect_sound, collect_baselines, move_to, peak_value
-
-ser = serial.Serial('/dev/cu.usbserial-130')
-time.sleep(2)
-print(ser.name)
-
-ser.readline()
-ser.readline()
+from robot import Robot
+import time
+r = Robot()
 
 minval=65
 maxval=1024
 
 
 def explore(points):
-    shifts = collect_baselines(200)
+    shifts = r.collect_baselines(200)
     input("\nTURN ON METRONOME! HIT ENTER TO CONTINUE.\n")
 
     z = -45
@@ -24,9 +19,9 @@ def explore(points):
     for p_t in points:
         x = p_t[0]
         y = p_t[1]
-        move_to(x,y,z)
+        r.move_to(x,y)
         time.sleep(1)
-        pv = peak_value(100, 1.0, shifts)
+        pv = r.peak_value(100, 1.0, shifts)
         print(pv)
         data.append(((x,y), pv))
 
@@ -136,6 +131,6 @@ print("Actual Sound Location: ", s)
 
 
 # move to the guess location
-z = -45
-move_to(s_prime[0],s_prime[1],z)
+
+r.move_to(s_prime[0],s_prime[1])
 
