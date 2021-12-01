@@ -47,6 +47,21 @@ def load_data(data_file, sep):
         r[xx//sep + shift][yy//sep + shift] = data[i][1][1]
     return x, y, l, r
 
+
+def load_data_map(data_file):
+    npzfile = np.load(data_file)
+    data = npzfile["data"]
+
+    l_map = dict()
+    r_map = dict()
+    for i in range(len(data)):
+        x = int(data[i][0][0])
+        y = int(data[i][0][1])
+        l_map[(x,y)] = data[i][1][0]
+        r_map[(x,y)] = data[i][1][1]
+
+    return l_map, r_map
+
 def plot_data(x, y, l, r, ax0, ax1):
     
     c = ax0.pcolormesh(x, y, l, cmap='RdBu', vmin=40, vmax=250, shading='auto')
@@ -146,12 +161,12 @@ def simulate():
         # label_source(axs[1])
         plt.show()
 
-def evaluate():
+def evaluate_one_step():
     # iterate through sources to get the data files: sources[i] + "_data_" + str(i) + ".npz"
     model = FC(2, 4, 1000, 4)
     model.load_state_dict(torch.load("./models/FC3-1000-8:2.pth"))
 
-    dataset = datasets.OneStepDataset("./data", test=True)
+    dataset = datasets.OneStepDataset("./data")
 
     for location in sources:
         s = sound_loc[location]
@@ -185,20 +200,70 @@ def evaluate():
         # label_source(axs[0])
         # label_source(axs[1])
 
-def load_data_map(data_file):
-    npzfile = np.load(data_file)
-    data = npzfile["data"]
 
-    l_map = dict()
-    r_map = dict()
-    for i in range(len(data)):
-        x = int(data[i][0][0])
-        y = int(data[i][0][1])
-        l_map[(x,y)] = data[i][1][0]
-        r_map[(x,y)] = data[i][1][1]
+def heuristic(l_map, r_map):
+    point_locations = [(-15, -15), (0, 20), (15, -5)]
+    LR_difference = []
+    LR_avg = []
+    x_loc = []
+    for point in point_locations:
+        L = l_map[point]
+        R = r_map[point]
+        LR_difference.append(L-R)
+        LR_avg.append(np.mean([L, R]))
+        x_loc.append(point[0])
 
-    return l_map, r_map
+    diff_avg = np.mean(LR_difference)
+    # print("LR Difference: ", diff_avg, "\n")
+    max_idx = np.argmax(LR_avg)
 
+    other_pts = np.delete(x_loc, max_idx)
+    x_dir = x_loc[max_idx] - other_pts[0] + x_loc[max_idx] - other_pts[1]
+    # print("X Direction: ", x_dir, "\n")
+
+    # look at if sound source is from left or right
+    if diff_avg > 25:
+        return "left"
+    elif diff_avg < -25:
+        return "right"
+
+    # look at if sound source is front or back
+    elif x_dir > 0:
+        return "front"
+    else:
+        return "back"
+
+
+def evaluate_heuristic():
+    # iterate through sources to get the data files: sources[i] + "_data_" + str(i) + ".npz"
+    
+    dataset = datasets.OneStepDataset("./data")
+
+    for location in sources:
+        s = sound_loc[location]
+        # fig, axs = plt.subplots(4,1)
+        fig, axs = plt.subplots(4,25)
+        fig.set_size_inches(20, 5)
+        # iterate through the .npz files
+        success = 0
+        tot_steps = 0
+        for i in range(8,10):
+            cnt = 0
+            file_path = "data/" + location + "_data_" + str(i) + ".npz"
+            x, y, l, r = load_data(file_path, sep)
+            l_map, r_map = load_data_map(file_path)
+            pred = heuristic(l_map, r_map)
+            plot_data(x, y, l, r, axs[(i-8)*2,cnt], axs[(i-8)*2+1,cnt])
+            print("ground truth:", location)
+            print("pred:", pred)
+            if pred == location:
+                success += 1
+        [axi.set_axis_off() for axi in axs.ravel()]
+        plt.savefig("./figures/eval_heuristic_"+location+".png")
+        plt.show()
+        print("success rate:", success, '/2')
+        # label_source(axs[0])
+        # label_source(axs[1])
 
 # simulate()
-evaluate()
+evaluate_heuristic()
