@@ -177,4 +177,5 @@ class TwoStepEstimate(Task):
 if __name__ == "__main__":
     task = OneStepEstimate()
     train_accs, train_losses, test_accs, test_losses = train_and_test(task)
+    
     task.save_model("FC3-1000-8:2")

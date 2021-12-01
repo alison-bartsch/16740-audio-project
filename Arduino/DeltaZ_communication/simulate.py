@@ -49,13 +49,13 @@ def load_data(data_file, sep):
 
 def plot_data(x, y, l, r, ax0, ax1):
     
-    c = ax0.pcolormesh(x, y, l, cmap='RdBu', vmin=40, vmax=250)
+    c = ax0.pcolormesh(x, y, l, cmap='RdBu', vmin=40, vmax=250, shading='auto')
     ax0.set_title('Left')
     ax0.axis([x.min(), x.max(), y.min(), y.max()])
     ax0.set_aspect('equal')
     # fig.colorbar(c, ax=ax0)
 
-    c = ax1.pcolormesh(x, y, r, cmap='RdBu', vmin=40, vmax=250)
+    c = ax1.pcolormesh(x, y, r, cmap='RdBu', vmin=40, vmax=250, shading='auto')
     ax1.set_title('Right')
     ax1.axis([x.min(), x.max(), y.min(), y.max()])
     ax1.set_aspect('equal')
@@ -72,7 +72,7 @@ def plot_traj(traj, ax):
     n = len(traj)
     # ax.set_color_cycle([cm(1.0*i/(n-1)) for i in range(n-1)])
     for i in range(n-1):
-        ax.plot(traj[:,0], traj[:,1])
+        ax.plot(traj[:,0], traj[:,1], c='g')
 
 def visualize_all():
     # iterate through sources to get the data files: sources[i] + "_data_" + str(i) + ".npz"
@@ -91,6 +91,10 @@ def find_nearest_pos(pos):
     pos[0] = max(pos[0], -30)
     pos[1] = min(pos[1], 30)
     pos[1] = max(pos[1], -30)
+    if abs(pos[0]) >= 30:
+        pos[1] = 0
+    if abs(pos[1]) >= 30:
+        pos[0] = 0
     return pos
     
 def rollout(model, start_pos, l, r, scale, shift):
@@ -98,7 +102,7 @@ def rollout(model, start_pos, l, r, scale, shift):
     goal = np.array([0,0])
     pos_list = [pos]
     cum_pred = torch.tensor(np.zeros(4))
-    for i in range(7):
+    for i in range(30):
         input = (np.array([pos[0], pos[1], l[tuple(pos)], r[tuple(pos)]]) - shift) / scale
         pred = model(torch.tensor(input.astype("float32")))
         cum_pred = cum_pred * 0.8 + pred
@@ -107,11 +111,12 @@ def rollout(model, start_pos, l, r, scale, shift):
         if np.linalg.norm(goal-pos)  < 1e-6:
             break
         direction = (goal-pos) / np.linalg.norm(goal-pos)
-        print(pos)
-        pos = pos + direction * 10
-        print(pos)
+        confidence = cum_pred[loc].detach().numpy() * 2.5
+        # confidence = 10
+        # print(confidence)
+        pos = pos + direction * confidence
+        # print(np.linalg.norm(pos))
         pos = find_nearest_pos(pos)
-        print(pos)
         
         pos_list.append(pos)
     
@@ -146,25 +151,37 @@ def evaluate():
     model = FC(2, 4, 1000, 4)
     model.load_state_dict(torch.load("./models/FC3-1000-8:2.pth"))
 
-    dataset = AudioDataset("./data")
+    dataset = datasets.OneStepDataset("./data", test=True)
 
     for location in sources:
         s = sound_loc[location]
+        # fig, axs = plt.subplots(4,1)
         fig, axs = plt.subplots(4,25)
         fig.set_size_inches(20, 5)
         # iterate through the .npz files
+        success = 0
+        tot_steps = 0
         for i in range(8,10):
             cnt = 0
+            file_path = "data/" + location + "_data_" + str(i) + ".npz"
             x, y, l, r = load_data(file_path, sep)
             l_map, r_map = load_data_map(file_path)
+            # plot_data(x, y, l, r, axs[(i-8)*2], axs[(i-8)*2+1])
             for sx in range(-10,11,5):
                 for sy in range(-10,11,5):
-                    cnt += 1
-                    file_path = "data/" + location + "_data_" + str(i) + ".npz"
-                    plot_data(x, y, l, r, axs[i-8,cnt], axs[i-8+1,cnt])
+                    plot_data(x, y, l, r, axs[(i-8)*2,cnt], axs[(i-8)*2+1,cnt])
                     traj = rollout(model, [sx,sy], l_map, r_map, dataset.scale, dataset.shift)
-                    plot_traj(traj, axs[i-8,cnt])
+                    # plot_traj(traj, axs[(i-8)*2])
+                    plot_traj(traj, axs[(i-8)*2, cnt])
+                    cnt += 1
+                    tot_steps += len(traj)
+                    if np.linalg.norm(traj[-1] - s) < 1e-3:
+                        success += 1
+        [axi.set_axis_off() for axi in axs.ravel()]
+        plt.savefig("./figures/eval_adaptive_"+location+".png")
         plt.show()
+        print("success rate:", success/50)
+        print("average steps:", tot_steps/50)
         # label_source(axs[0])
         # label_source(axs[1])
 
