@@ -7,7 +7,6 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import matplotlib.patches as patches
 from datasets import AudioDataset
 
@@ -99,7 +98,7 @@ def rollout(model, l, r, scale, shift):
     goal = np.array([0,0])
     pos_list = [pos]
     cum_pred = torch.tensor(np.zeros(4))
-    for i in range(7):
+    for i in range(10):
         input = (np.array([pos[0], pos[1], l[tuple(pos)], r[tuple(pos)]]) - shift) / scale
         pred = model(torch.tensor(input.astype("float32")))
         cum_pred = cum_pred * 0.8 + pred

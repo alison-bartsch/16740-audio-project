@@ -1,7 +1,6 @@
 import random
 import os, sys
 import numpy as np
-import pandas as pd
 import torch 
 import json
 import ipaddress
