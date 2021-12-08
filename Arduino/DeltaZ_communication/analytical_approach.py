@@ -50,7 +50,7 @@ locations_random = True
 
 if locations_random:
     # randomly sample an angle
-    theta = math.radians(45) # change this to be a random angle!!!!
+    theta = math.radians(random.randint(0,360))
     r = 15
     side_length = 2*r*math.cos(math.radians(30))
 
