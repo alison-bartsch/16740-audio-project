@@ -10,7 +10,8 @@ import re
 
 class Robot():
     def __init__(self) -> None:
-        self.ser = serial.Serial('/dev/cu.wchusbserial1410')
+        # self.ser = serial.Serial('/dev/cu.wchusbserial1410')
+        self.ser = serial.Serial('/dev/cu.usbserial-120')
         time.sleep(2)
         print(self.ser.name)
         self.ser.readline()

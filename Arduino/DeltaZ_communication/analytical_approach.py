@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import random
 from robot import Robot
@@ -39,12 +40,58 @@ def explore(points):
 # s = (0, 30)
 
 
+# ----------------------------------------------------------
+# -------------- Determine Sampling Locations --------------
+# ----------------------------------------------------------
+
 # want to move to 3 different locations - have a random option and a fixed triangle option
 point_locations = []
-locations_random = False
+locations_random = True
 
 if locations_random:
-    point_locations = []
+    # randomly sample an angle
+    theta = math.radians(45) # change this to be a random angle!!!!
+    r = 15
+    side_length = 2*r*math.cos(math.radians(30))
+
+    x1 = math.cos(theta)*r
+    y1 = math.sin(theta)*r
+
+
+    vec_mag = math.sqrt(x1**2 + y1**2)
+    dir_ctr = (-x1/vec_mag, -y1/vec_mag)
+
+
+    dir2 = (math.cos(math.radians(30)*dir_ctr[0]) - math.sin(math.radians(30)*dir_ctr[1]), 
+        math.sin(math.radians(30)*dir_ctr[0]) + math.cos(math.radians(30)*dir_ctr[1]))
+
+    mag2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
+    dir2 = (dir2[0]/mag2, dir2[1]/mag2)
+
+
+    dir3 = (math.cos(math.radians(-30)*dir_ctr[0]) - math.sin(math.radians(-30)*dir_ctr[1]), 
+        math.sin(math.radians(-30)*dir_ctr[0]) + math.cos(math.radians(-30)*dir_ctr[1]))
+
+    mag3 = math.sqrt(dir3[0]**2 + dir3[1]**2)
+    dir3= (dir3[0]/mag3, dir3[1]/mag3)
+
+    x2 = x1 - dir2[0]*side_length
+    y2 = y1 - dir2[1]*side_length
+
+    x3 = x1 - dir3[0]*side_length
+    y3 = y1 - dir3[1]*side_length
+
+
+    # round all the points to the nearest mutliple of 5
+    x1 = 5 * round(x1/5)
+    y1 = 5 * round(y1/5)
+    x2 = 5 * round(x2/5)
+    y2 = 5 * round(y2/5)
+    x3 = 5 * round(x3/5)
+    y3 = 5 * round(y3/5)
+
+    point_locations = [(x1, y1), (x2, y2), (x3, y3)]
+
 else:
     point_locations = [(-15, -15), (0, 20), (15, -5)]
 
