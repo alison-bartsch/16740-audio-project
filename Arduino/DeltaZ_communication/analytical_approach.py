@@ -50,36 +50,50 @@ locations_random = True
 
 if locations_random:
     # randomly sample an angle
-    theta = math.radians(random.randint(0,360))
+    th1 = math.radians(random.randint(0,360))
     r = 15
-    side_length = 2*r*math.cos(math.radians(30))
 
-    x1 = math.cos(theta)*r
-    y1 = math.sin(theta)*r
+    th2 = th1 + math.radians(120)
+    th3 = th1 - math.radians(120)
+
+    x1 = math.cos(th1)*r
+    y1 = math.sin(th1)*r
+
+    x2 = math.cos(th2)*r
+    y2 = math.sin(th2)*r
+
+    x3 = math.cos(th3)*r
+    y3 = math.sin(th3)*r
+
+    print("Theta A: ", math.degrees(th1))
+    print("Theta B: ", math.degrees(th2))
+    print("Theta C: ", math.degrees(th3))
 
 
-    vec_mag = math.sqrt(x1**2 + y1**2)
-    dir_ctr = (-x1/vec_mag, -y1/vec_mag)
+    # side_length = 2*r*math.cos(math.radians(30))
+
+    # vec_mag = math.sqrt(x1**2 + y1**2)
+    # dir_ctr = (-x1/vec_mag, -y1/vec_mag)
 
 
-    dir2 = (math.cos(math.radians(30)*dir_ctr[0]) - math.sin(math.radians(30)*dir_ctr[1]), 
-        math.sin(math.radians(30)*dir_ctr[0]) + math.cos(math.radians(30)*dir_ctr[1]))
+    # dir2 = (math.cos(math.radians(30)*dir_ctr[0]) - math.sin(math.radians(30)*dir_ctr[1]), 
+    #     math.sin(math.radians(30)*dir_ctr[0]) + math.cos(math.radians(30)*dir_ctr[1]))
 
-    mag2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
-    dir2 = (dir2[0]/mag2, dir2[1]/mag2)
+    # mag2 = math.sqrt(dir2[0]**2 + dir2[1]**2)
+    # dir2 = (dir2[0]/mag2, dir2[1]/mag2)
 
 
-    dir3 = (math.cos(math.radians(-30)*dir_ctr[0]) - math.sin(math.radians(-30)*dir_ctr[1]), 
-        math.sin(math.radians(-30)*dir_ctr[0]) + math.cos(math.radians(-30)*dir_ctr[1]))
+    # dir3 = (math.cos(math.radians(-30)*dir_ctr[0]) - math.sin(math.radians(-30)*dir_ctr[1]), 
+    #     math.sin(math.radians(-30)*dir_ctr[0]) + math.cos(math.radians(-30)*dir_ctr[1]))
 
-    mag3 = math.sqrt(dir3[0]**2 + dir3[1]**2)
-    dir3= (dir3[0]/mag3, dir3[1]/mag3)
+    # mag3 = math.sqrt(dir3[0]**2 + dir3[1]**2)
+    # dir3= (dir3[0]/mag3, dir3[1]/mag3)
 
-    x2 = x1 - dir2[0]*side_length
-    y2 = y1 - dir2[1]*side_length
+    # x2 = x1 - dir2[0]*side_length
+    # y2 = y1 - dir2[1]*side_length
 
-    x3 = x1 - dir3[0]*side_length
-    y3 = y1 - dir3[1]*side_length
+    # x3 = x1 - dir3[0]*side_length
+    # y3 = y1 - dir3[1]*side_length
 
 
     # round all the points to the nearest mutliple of 5

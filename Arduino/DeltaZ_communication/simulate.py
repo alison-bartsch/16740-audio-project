@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 from collections import deque 
 import matplotlib
 import re
+import math
+import random
 
 
 sources = ["front", "back", "left", "right"]
@@ -200,9 +202,37 @@ def evaluate_one_step():
         # label_source(axs[0])
         # label_source(axs[1])
 
+def heuristic_locations():
+    # randomly sample an angle
+    th1 = math.radians(random.randint(0,360))
+    r = 25
 
-def heuristic(l_map, r_map):
-    point_locations = [(-15, -15), (0, 20), (15, -5)]
+    th2 = th1 + math.radians(120)
+    th3 = th1 - math.radians(120)
+
+    x1 = math.cos(th1)*r
+    y1 = math.sin(th1)*r
+
+    x2 = math.cos(th2)*r
+    y2 = math.sin(th2)*r
+
+    x3 = math.cos(th3)*r
+    y3 = math.sin(th3)*r
+
+    # round all the points to the nearest mutliple of 5
+    x1 = 5 * round(x1/5)
+    y1 = 5 * round(y1/5)
+    x2 = 5 * round(x2/5)
+    y2 = 5 * round(y2/5)
+    x3 = 5 * round(x3/5)
+    y3 = 5 * round(y3/5)
+
+    # print([(x1, y1), (x2, y2), (x3, y3)], '\n')
+    return [(x1, y1), (x2, y2), (x3, y3)]
+
+
+def heuristic(l_map, r_map, point_locations):
+    # point_locations = [(-15, -15), (0, 20), (15, -5)]
     LR_difference = []
     LR_avg = []
     x_loc = []
@@ -222,9 +252,9 @@ def heuristic(l_map, r_map):
     # print("X Direction: ", x_dir, "\n")
 
     # look at if sound source is from left or right
-    if diff_avg > 25:
+    if diff_avg > 35:
         return "left"
-    elif diff_avg < -25:
+    elif diff_avg < -35:
         return "right"
 
     # look at if sound source is front or back
@@ -247,21 +277,30 @@ def evaluate_heuristic():
         # iterate through the .npz files
         success = 0
         tot_steps = 0
+        num_scenarios = 0
         for i in range(8,10):
             cnt = 0
             file_path = "data/" + location + "_data_" + str(i) + ".npz"
             x, y, l, r = load_data(file_path, sep)
             l_map, r_map = load_data_map(file_path)
-            pred = heuristic(l_map, r_map)
-            plot_data(x, y, l, r, axs[(i-8)*2,cnt], axs[(i-8)*2+1,cnt])
-            print("ground truth:", location)
-            print("pred:", pred)
-            if pred == location:
-                success += 1
-        [axi.set_axis_off() for axi in axs.ravel()]
-        plt.savefig("./figures/eval_heuristic_"+location+".png")
-        plt.show()
-        print("success rate:", success, '/2')
+
+            # iterate through the different sampled positions - get 10 different random samples
+            for j in range(25):
+                point_locations = heuristic_locations()
+                pred = heuristic(l_map, r_map, point_locations)
+                # plot_data(x, y, l, r, axs[(i-8)*2,cnt], axs[(i-8)*2+1,cnt])
+
+                num_scenarios += 1
+
+                # print("ground truth:", location)
+                # print("pred:", pred)
+                if pred == location:
+                    success += 1
+
+        # [axi.set_axis_off() for axi in axs.ravel()]
+        # plt.savefig("./figures/eval_heuristic_"+location+".png")
+        # plt.show()
+        print("success rate for ", location, ": ", success, '/', num_scenarios)
         # label_source(axs[0])
         # label_source(axs[1])
 
